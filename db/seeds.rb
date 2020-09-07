@@ -5,6 +5,8 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+ChatRoom.delete_all
+Message.delete_all
 
 chat1 = ChatRoom.create(name: "First one")
 chat2 = ChatRoom.create(name: "Second one")
