@@ -22,7 +22,7 @@ class UsersController < ApplicationController
     end
 
     def login
-        @user = User.find_by(name: params[:name])
+        @user = User.find_by(username: params[:username])
         if @user && @user.authenticate(params[:password])
             # byebug
             wristband = encode_token({user_id: @user.id})
@@ -49,6 +49,6 @@ class UsersController < ApplicationController
     private
 
     def user_params
-        params.permit(:name, :password)
+        params.permit(:username, :password)
     end
 end
