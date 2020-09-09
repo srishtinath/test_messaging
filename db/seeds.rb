@@ -7,6 +7,7 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 ChatRoom.delete_all
 Message.delete_all
+User.delete_all
 
 chat1 = ChatRoom.create(name: "First one")
 chat2 = ChatRoom.create(name: "Second one")
@@ -21,3 +22,5 @@ Message.create(chat_room: chat1, content: "Sup!")
 Message.create(chat_room: chat1, content: "Hot damn!")
 Message.create(chat_room: chat1, content: "It's getting hot in here!")
 Message.create(chat_room: chat1, content: "So take off all your clothes!")
+
+User.create(username: "srishti", password: "abc123")
