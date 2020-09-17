@@ -1,11 +1,11 @@
 class UsersController < ApplicationController
     def index
         users = User.all
-        render json: UserSerializer.new(users)
+        render json: users
     end
     
     def create
-        user = User.new(username: params['user']['username'], password: params['user']['password'])
+        user = User.new(username: user_params['username'], password: user_params['password'])
         if user.save
             payload = {'user_id': user.id}
             token = encode(payload)

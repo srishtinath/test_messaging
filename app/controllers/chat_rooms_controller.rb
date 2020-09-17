@@ -1,7 +1,7 @@
 class ChatRoomsController < ApplicationController
      def index
           rooms = ChatRoom.all
-          render json: ChatRoomSerializer.new(rooms)
+          render json: rooms
      end
    
      def create

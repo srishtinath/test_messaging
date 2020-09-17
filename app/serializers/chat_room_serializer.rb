@@ -1,6 +1,9 @@
 class ChatRoomSerializer < ActiveModel::Serializer
-  attributes :name, :messages
-  attribute :users do |room|
-    UserSerializer.new(room.users.uniq)
+  attributes :name, :messages, :users
+  
+  def users
+    object.users.uniq.map do |user|
+      ::UserSerializer.new(user).attributes
+    end
   end
 end
