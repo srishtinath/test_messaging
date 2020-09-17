@@ -1,16 +1,26 @@
 class MessagesController < ApplicationController
+    def index
+        messages = Message.all
+        render json: messages
+    end
+
     def create
         message = Message.new(message_params)
+        room = Room.find(message_params["room_id"])
         if message.save
-            chat_room = ChatRoom.find(message.chat_room_id)
-            ChatRoomChannel.broadcast_to(chat_room, message)
-            # render json: message
-        else
-            render json: {errors: message.errors.full_messages}, status: 422
+            puts "successfully saved a message!"
+            RoomsChannel.broadcast_to(room, {
+                room: RoomSerializer.new(room),
+                users: UserSerializer.new(room.users),
+                messages: MessageSerializer.new(room.messages)
+            })
         end
-   end
-   private
-   def message_params
-        params.require(:message).permit(:content, :chat_room_id)
-   end
+        render json: MessageSerializer.new(message)
+    end
+
+    private
+
+    def message_params
+        params.require(:message).permit(:content, :user_id, :room_id)
+    end
 end

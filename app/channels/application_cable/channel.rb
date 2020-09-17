@@ -1,19 +1,19 @@
 module ApplicationCable
   class Channel < ActionCable::Channel::Base
-    identified_by :current_user
+  #   identified_by :current_user
 
-    def connect
-      self.current_user = find_verified_user
-    end
+  #   def connect
+  #     self.current_user = find_verified_user
+  #   end
 
-    protected
+  #   protected
 
-    def find_verified_user
-      if verified_user = env['warden'].user
-        verified_user
-      else
-        reject_unauthorized_connection
-      end
-    end
-  end
+  #   def find_verified_user
+  #     if verified_user = env['warden'].user
+  #       verified_user
+  #     else
+  #       reject_unauthorized_connection
+  #     end
+  #   end
+  # end
 end

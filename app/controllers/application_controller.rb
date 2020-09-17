@@ -1,39 +1,14 @@
 class ApplicationController < ActionController::API
-    def encode_token(payload)
-        # should store secret in env variable
-        JWT.encode(payload, 'def123')
+    def secret_key
+        'def456'
     end
 
-    def auth_header
-        # { Authorization: 'Bearer <token>' }
-        request.headers['Authorization']
+    def encode(payload)
+        JWT.encode(payload, secret_key, 'HS256')
     end
 
-    def decoded_token
-        if auth_header
-        token = auth_header
-        # header: { 'Authorization': 'Bearer <token>' }
-        begin
-            JWT.decode(token, 'def123', true, algorithm: 'HS256')
-        rescue JWT::DecodeError
-            nil
-        end
-        end
-    end
-
-    def logged_in_user
-        if decoded_token
-        user_id = decoded_token[0]['user_id']
-        @user = User.find_by(id: user_id)
-        end
-    end
-
-    def logged_in?
-        !!logged_in_user
-    end
-
-    def authorized
-        render json: { message: 'Please log in' }, status: :unauthorized unless logged_in?
+    def decode(token)
+        JWT.decode(token, secret_key, true, { algorithm: 'HS256'})[0]
     end
 
 end

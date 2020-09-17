@@ -1,54 +1,39 @@
 class UsersController < ApplicationController
-    # skip_before_action :verify_authenticity_token
-    before_action :authorized, only: [:stay_logged_in]
-
-    
     def index
-        @users = User.all
-        render :json => @users
+        users = User.all
+        render json: UserSerializer.new(users)
     end
     
     def create
-        @user = User.create(user_params)
-        if @user.valid?
-            wristband = encode_token({user_id: @user.id})
+        user = User.new(username: params['user']['username'], password: params['user']['password'])
+        if user.save
+            payload = {'user_id': user.id}
+            token = encode(payload)
             render json: {
-                user: @user,
-                token: wristband
+                user: UserSerializer.new(user),
+                token: token,
+                authenticated: true
             }
-        else
-            render json: {message: "Failed to create a new user"}, status: 403
+        else 
+            render json: { message: 'There was an error creating your account' }
         end
     end
-
-    def login
-        @user = User.find_by(username: params[:username])
-        if @user && @user.authenticate(params[:password])
-            # byebug
-            wristband = encode_token({user_id: @user.id})
-            render json: {user: @user, token: wristband}
-        elsif @user && !@user.authenticate(params[:password])
-            render json: {message: "Incorrect password"}
-        else
-            render json: {message: "User not found"}
-        end
-    end
-
-    def stay_logged_in
-        wristband = encode_token({user_id: @user.id})
-        render json: {user: @user, token: wristband}
-    end
-    
-    
 
     def show
-        @user = User.find(params[:id])
-        render :json => @user
+        token = request.headers['Authentication'].split(' ')[1]
+        payload = decode(token)
+        user = User.find(payload['user_id'])
+        if user
+            render json: UserSerializer.new(user)
+        else 
+            render json: { message: 'Error', authenticated: false }
+        end
     end
-    
+
+
     private
 
     def user_params
-        params.permit(:username, :password)
+        params.require(:user).permit(:username, :password)
     end
 end
