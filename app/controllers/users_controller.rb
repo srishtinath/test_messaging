@@ -1,39 +1,67 @@
 class UsersController < ApplicationController
+    skip_before_action :verify_authenticity_token
+    before_action :authorized, only: [:stay_logged_in]
+
+    
     def index
-        users = User.all
-        render json: users
+        @users = User.all
+        render :json => @users
     end
     
+    # def new
+    
+    # end
+    
     def create
-        user = User.new(username: user_params['username'], password: user_params['password'])
-        if user.save
-            payload = {'user_id': user.id}
-            token = encode(payload)
+        @user = User.create(user_params)
+        ClueList.create(user: @user)
+        if @user.valid?
+            wristband = encode_token({user_id: @user.id})
             render json: {
-                user: UserSerializer.new(user),
-                token: token,
-                authenticated: true
+                user: UserSerializer.new(@user),
+                token: wristband
             }
-        else 
-            render json: { message: 'There was an error creating your account' }
+        else
+            render json: {message: "Failed to create a new user"}, status: 403
         end
+    end
+
+    def login
+        @user = User.find_by(username: params[:username])
+        if @user && @user.authenticate(params[:password])
+            # byebug
+            wristband = encode_token({user_id: @user.id})
+            render json: {user: UserSerializer.new(@user), token: wristband}
+        elsif @user && !@user.authenticate(params[:password])
+            render json: {message: "Incorrect password"}
+        else
+            render json: {message: "User not found"}
+        end
+    end
+
+    def stay_logged_in
+        wristband = encode_token({user_id: @user.id})
+        render json: {user: UserSerializer.new(@user), token: wristband}
+    end
+    
+    
+    def wrongGuess
+        @user = User.find(params[:user_id])
+        UserRoom.where(user_id: @user.id).destroy_all
+        render json: {message: "All user rooms have been removed"}
     end
 
     def show
-        token = request.headers['Authentication'].split(' ')[1]
-        payload = decode(token)
-        user = User.find(payload['user_id'])
-        if user
-            render json: UserSerializer.new(user)
-        else 
-            render json: { message: 'Error', authenticated: false }
-        end
+        @user = User.find(params[:id])
+        render :json => @user
     end
-
-
+    
+    # def destroy
+    
+    # end
     private
 
     def user_params
-        params.require(:user).permit(:username, :password)
+        params.permit(:username, :password)
     end
 end
